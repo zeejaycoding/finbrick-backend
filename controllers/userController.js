@@ -135,21 +135,25 @@ const sendVerificationCode = expressHandler(async (req, res) => {
     let user = await User.findById(req.user.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const code = Math.floor(1000 + Math.random() * 9000).toString();
-    user.verificationCode = code;
-    user.verificationExpiration = new Date(Date.now() + 5 * 60 * 1000);
-    try {
-      const savedUser = await user.save();
-      console.log('Updated user document:', savedUser);
-    } catch (saveError) {
-      console.error('Save error:', saveError.message);
-      // Fallback update
-      await User.findByIdAndUpdate(req.user.userId, {
-        verificationCode: code,
-        verificationExpiration: user.verificationExpiration,
-      }, { new: true });
-    }
-    console.log(`Verification code for ${user.email}: ${code} at ${new Date().toISOString()}`);
+    // Comment out dynamic code generation and expiration
+    // const code = Math.floor(1000 + Math.random() * 9000).toString();
+    // user.verificationCode = code;
+    // user.verificationExpiration = new Date(Date.now() + 5 * 60 * 1000);
+    const staticCode = "1234"; // Static verification code
+    user.verificationCode = staticCode;
+    // try {
+    //   const savedUser = await user.save();
+    //   console.log('Updated user document:', savedUser);
+    // } catch (saveError) {
+    //   console.error('Save error:', saveError.message);
+    //   // Fallback update
+    //   await User.findByIdAndUpdate(req.user.userId, {
+    //     verificationCode: code,
+    //     verificationExpiration: user.verificationExpiration,
+    //   }, { new: true });
+    // }
+    await user.save(); // Save with static code
+    console.log(`Static verification code for ${user.email}: ${staticCode} at ${new Date().toISOString()}`);
     res.status(200).json({ message: 'Verification code sent' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to send verification code: ' + err.message });
@@ -177,23 +181,22 @@ const verifyCode = expressHandler(async (req, res) => {
       console.log('User not found for userId:', req.user.userId);
       return res.status(404).json({ error: 'User not found' });
     }
-  
-        user.verificationCode=code
-    
-        await user.save();
 
-    console.log('Stored verification code:', user.verificationCode);
-    console.log('Provided code:', code);
-    console.log('Expiration time:', user.verificationExpiration);
-    console.log('Current time:', new Date());
+    // Comment out dynamic expiration check
+    // if (!user.verificationCode || user.verificationExpiration < new Date() || user.verificationCode !== code) {
+    //   console.log('Verification failed: Code mismatch or expired');
+    //   return res.status(400).json({ error: 'Invalid or expired code' });
+    // }
 
-    if (!user.verificationCode || user.verificationExpiration < new Date() || user.verificationCode !== code) {
-      console.log('Verification failed: Code mismatch or expired');
-      return res.status(400).json({ error: 'Invalid or expired code' });
+    // Use static code comparison
+    const staticCode = "1234";
+    if (user.verificationCode !== staticCode || user.verificationCode !== code) {
+      console.log('Verification failed: Code mismatch');
+      return res.status(400).json({ error: 'Invalid code' });
     }
 
     user.verificationCode = null;
-    user.verificationExpiration = null;
+    // user.verificationExpiration = null; // Commented out as it's not set dynamically
     await user.save();
 
     console.log('Code verified successfully for user:', user.email);
