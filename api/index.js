@@ -11,7 +11,7 @@ mongoose.connect(process.env.MONGO_URI, {
   serverSelectionTimeoutMS: 5000,
 })
   .then(() => console.log('MongoDB Connected successfully'))
-  .catch(err => console.error('MongoDB Connection Error:', err.message, 'from IP:', req?.headers['x-forwarded-for'] || 'Unknown'));
+  .catch(err => console.error('MongoDB Connection Error:', err.message));
 
 app.use('/api/users', require('../routes/userRoutes'));
 
