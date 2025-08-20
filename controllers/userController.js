@@ -2,6 +2,7 @@ const User = require('../models/userModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const expressHandler = require('express-async-handler');
+const nodemailer = require('nodemailer');
 
 const registeration = expressHandler(async (req, res) => {
   try {
@@ -135,21 +136,32 @@ const sendVerificationCode = expressHandler(async (req, res) => {
     let user = await User.findById(req.user.userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
+    // Dynamic code generation
     const code = Math.floor(1000 + Math.random() * 9000).toString();
     user.verificationCode = code;
-    user.verificationExpiration = new Date(Date.now() + 5 * 60 * 1000);
-    try {
-      const savedUser = await user.save();
-      console.log('Updated user document:', savedUser);
-    } catch (saveError) {
-      console.error('Save error:', saveError.message);
-      // Fallback update
-      await User.findByIdAndUpdate(req.user.userId, {
-        verificationCode: code,
-        verificationExpiration: user.verificationExpiration,
-      }, { new: true });
-    }
-    console.log(`Verification code for ${user.email}: ${code} at ${new Date().toISOString()}`);
+    user.verificationExpiration = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiration
+
+    await user.save();
+
+    // Send email with Nodemailer
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER, // info@finbrick.app
+        pass: process.env.EMAIL_PASSWORD, // Finbrick2025!
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: user.email,
+      subject: 'Finbrick Verification Code',
+      text: `Your verification code is ${code}. It expires in 5 minutes.`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`Verification code sent to ${user.email}: ${code} at ${new Date().toISOString()}`);
+
     res.status(200).json({ message: 'Verification code sent' });
   } catch (err) {
     res.status(500).json({ error: 'Failed to send verification code: ' + err.message });
@@ -177,10 +189,6 @@ const verifyCode = expressHandler(async (req, res) => {
       console.log('User not found for userId:', req.user.userId);
       return res.status(404).json({ error: 'User not found' });
     }
-  
-        user.verificationCode=code
-    
-        await user.save();
 
     console.log('Stored verification code:', user.verificationCode);
     console.log('Provided code:', code);
