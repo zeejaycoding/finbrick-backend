@@ -15,6 +15,7 @@ mongoose.connect(process.env.MONGO_URI, {
 
 app.use('/api/users', require('../routes/userRoutes'));
 app.use('/api/wallet', require('../routes/walletRoutes'));
+app.use('/api/notes', require('../routes/noteRoutes'));
 
 app.get('/', (req, res) => res.send('Finbrick Backend API is running'));
 
