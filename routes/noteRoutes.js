@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { getNotes, saveNote } = require('../controllers/noteController');
-const authenticateToken = require('../middleware/auth'); // Assuming you have this middleware
+const auth = require('../middleware/auth.middleware'); 
 
-router.get('/getNotes', authenticateToken, getNotes);
-router.post('/saveNotes', authenticateToken, saveNote);
+router.get('/getNotes', auth, getNotes);
+router.post('/saveNotes', auth, saveNote);
 
 module.exports = router;
