@@ -17,8 +17,9 @@ const userSchema=new mongoose.Schema({
     placeOfBirth:{type:String},
     profession: {type:String},
     profilePhoto: {type:String},
-    verificationCode: { type: String }, // Optional field
-  verificationExpiration: { type: Date }, // Optional field
+    verificationCode: { type: String }, 
+  verificationExpiration: { type: Date }, 
+wallet: { type: mongoose.Schema.Types.ObjectId, ref: 'Wallet' },
   },
 })
 
