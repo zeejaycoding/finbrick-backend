@@ -45,11 +45,33 @@ const updateWallet = expressHandler(async (req, res) => {
     }
 
     const { balance, assets, liabilities, investments, fixedAssets, debts } = req.body;
+    // Validate and parse investments
+    let validatedInvestments = investments;
+    if (typeof investments === 'string') {
+      try {
+        validatedInvestments = JSON.parse(investments);
+      } catch (e) {
+        console.error('Invalid investments format: expected array, got string', investments);
+        return res.status(400).json({ error: 'Investments must be a valid JSON array' });
+      }
+    }
+    if (!Array.isArray(validatedInvestments)) {
+      console.error('Invalid investments format: expected array, got', typeof validatedInvestments);
+      return res.status(400).json({ error: 'Investments must be an array' });
+    }
+    // Validate each investment object
+    for (const inv of validatedInvestments) {
+      if (!inv.type || !inv.kod || !inv.adet || !inv.anlik || !inv.kz || !inv.toplam) {
+        console.error('Invalid investment object:', inv);
+        return res.status(400).json({ error: 'Each investment must have type, kod, adet, anlik, kz, and toplam' });
+      }
+    }
+
     const updateData = {
       balance,
       assets,
       liabilities,
-      investments,
+      investments: validatedInvestments,
       fixedAssets,
       debts,
       netWorth: (balance || 0) +
@@ -60,7 +82,7 @@ const updateWallet = expressHandler(async (req, res) => {
 
     const wallet = await Wallet.findOneAndUpdate(
       { userId: req.user.userId },
-      updateData,
+      { $set: updateData },
       { new: true, runValidators: true }
     );
 
@@ -74,5 +96,4 @@ const updateWallet = expressHandler(async (req, res) => {
     res.status(500).json({ error: 'Failed to update wallet: ' + err.message });
   }
 });
-
 module.exports = { getWalletInfo, updateWallet };
