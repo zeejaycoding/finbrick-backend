@@ -1,4 +1,3 @@
-// models/walletModel.js
 const mongoose = require('mongoose');
 
 const walletSchema = new mongoose.Schema({
@@ -12,31 +11,73 @@ const walletSchema = new mongoose.Schema({
     default: 0,
   },
   assets: [{
-    label: String, // e.g., 'Varlıklar', 'Aylık Gelir'
+    label: String,
     value: Number,
     isPositive: Boolean,
   }],
   liabilities: [{
-    label: String, // e.g., 'Borçlar', 'Aylık Gider'
+    label: String,
     value: Number,
     isPositive: Boolean,
   }],
   investments: [{
-    type: String, // e.g., 'Yatırım Fonu', 'Hisse Senedi', 'Altın'
-    kod: String, // e.g., 'Bimas', 'FBC'
-    adet: String,
-    anlik: String,
-    kz: String,
-    toplam: String,
+    type: {
+      type: String,
+      required: true,
+    },
+    kod: {
+      type: String,
+      required: true,
+    },
+    adet: {
+      type: String,
+      required: true,
+      validate: {
+        validator: function(v) {
+          return !isNaN(parseFloat(v)) && isFinite(v);
+        },
+        message: 'Adet must be a valid number string'
+      }
+    },
+    anlik: {
+      type: String,
+      required: true,
+      validate: {
+        validator: function(v) {
+          return !isNaN(parseFloat(v)) && isFinite(v);
+        },
+        message: 'Anlik must be a valid number string'
+      }
+    },
+    kz: {
+      type: String,
+      required: true,
+      validate: {
+        validator: function(v) {
+          return !isNaN(parseFloat(v)) && isFinite(v);
+        },
+        message: 'K/Z must be a valid number string'
+      }
+    },
+    toplam: {
+      type: String,
+      required: true,
+      validate: {
+        validator: function(v) {
+          return !isNaN(parseFloat(v)) && isFinite(v);
+        },
+        message: 'Toplam must be a valid number string'
+      }
+    },
   }],
   fixedAssets: [{
-    title: String, // e.g., 'Mercedes'
-    subtitle: String, // e.g., 'S220 - 2018'
+    title: String,
+    subtitle: String,
     value: Number,
   }],
   debts: [{
-    type: String, // e.g., 'Kredi Kartı', 'Kredi Borcu'
-    details: [String], // e.g., ['Garanti', '1.500 ₺', '15.000 ₺']
+    type: String,
+    details: [String],
   }],
   netWorth: {
     type: Number,
