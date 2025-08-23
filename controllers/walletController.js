@@ -45,18 +45,19 @@ const updateWallet = expressHandler(async (req, res) => {
     }
 
     const { balance, assets, liabilities, investments, fixedAssets, debts } = req.body;
+
     // Validate and parse investments
     let validatedInvestments = investments;
     if (typeof investments === 'string') {
       try {
         validatedInvestments = JSON.parse(investments);
       } catch (e) {
-        console.error('Invalid investments format: expected array, got string', investments);
+        console.error('Invalid investments format: expected JSON array, got string', investments);
         return res.status(400).json({ error: 'Investments must be a valid JSON array' });
       }
     }
     if (!Array.isArray(validatedInvestments)) {
-      console.error('Invalid investments format: expected array, got', typeof validatedInvestments);
+      console.error('Invalid investments format: expected array, got', typeof validatedInvestments, validatedInvestments);
       return res.status(400).json({ error: 'Investments must be an array' });
     }
     // Validate each investment object
@@ -93,7 +94,8 @@ const updateWallet = expressHandler(async (req, res) => {
     res.status(200).json({ message: 'Wallet updated', wallet });
   } catch (err) {
     console.error('Update wallet error:', err.stack);
-    res.status(500).json({ error: 'Failed to update wallet: ' + err.message });
+    res.status(500).json({ error: `Failed to update wallet: ${err.message}` });
   }
 });
+
 module.exports = { getWalletInfo, updateWallet };
